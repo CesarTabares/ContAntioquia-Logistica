@@ -10,29 +10,44 @@ from datetime import datetime
 import wx
 import openpyxl
 
+from pubsub import pub
+
 col_requerimiento_auto=1
-col_fecha_auto=2
-col_cotizacion=3
-col_tipotransporte=4
-col_tipocontenedor=5
-col_requieredescargue=6
-col_origen=7
-col_destino=8
-col_km=9
-col_precio=10
-col_recargopeaje=11
-col_nombreresponsable=12
-col_telefono_resp=13
-col_cargo=14
-col_nombresiso=15
-col_telefono_siso=16
-col_debeinfo=17
-col_horasantes=18
+col_area_req=2
+col_area=6
+col_fecha_auto=3
+col_cotizacion=4
+col_tipotransporte=5
+col_tipocontenedor=7
+col_requieredescargue=8
+col_origen=9
+col_destino=10
+col_km=11
+col_precio=12
+col_recargopeaje=13
+col_nombreresponsable=14
+col_telefono_resp=15
+col_cargo=16
+col_nombresiso=17
+col_telefono_siso=18
+col_debeinfo=19
+col_horasantes=20
+col_fechaentrega=21
+col_direccion=22
+col_referenciacont=23
+col_nombreconduc=24
+col_cedula=25
+col_telefonoconduc=26
+col_placa=27
+col_adiciones=28
+col_preguntahoras=29
+col_preguntadoc=30
+
 
 
 
 principal_color=wx.Colour(51, 102, 51)
-wb_listas=openpyxl.load_workbook('Listas.xlsx')
+wb_listas=openpyxl.load_workbook('Config.xlsx')
 wb_req=openpyxl.load_workbook('db_req.xlsx')
 
 class MyFrame(wx.Frame):
@@ -107,7 +122,7 @@ class MyFrame(wx.Frame):
         
         
     def configuracion(self, event):
-        print ("Button pressed!")
+        ww_configuracion(parent=self.panel).Show()
 
     #-------------Button Functions-----------------#              
     
@@ -172,9 +187,26 @@ class ww_nuevo_requerimiento11(wx.Frame):
         
     #-------------Button Functions-----------------#            
     def open_nuevo_req12(self, event):
+        
+        #try:
+        hist_req_sheet=wb_req['Requerimientos']
+        area_req=self.combo_area.GetValue()
+        self.fila_vacia = 2
+    
+        while (hist_req_sheet.cell(row = self.fila_vacia, column = 1).value != None) :
+          self.fila_vacia += 1
+        
+        hist_req_sheet.cell(row=self.fila_vacia, column=col_area_req).value=area_req  
         self.Destroy()
-        ww_nuevo_requerimiento12(parent=self.panel).Show()
 
+        ww_nuevo_requerimiento12(parent=self.panel).Show()
+        pub.sendMessage(event,"panel_listener",message=area_req)
+        print(2)
+        
+        
+        #except:
+         #   error_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.ICON_ERROR)
+          #  error_msgbox.ShowModal()
     #-------------Button Functions-----------------# 
         
 #############----------------------------------------FRONT END----------------------------------------#############
@@ -184,8 +216,14 @@ class ww_nuevo_requerimiento12(wx.Frame):
     
     def __init__(self,parent):
         ######----------------------------------------BACK END----------------------------------------#############
+        
+        pub.subscribe(self.adicionar_transp, "panel_listener")
+        print(1)
+        
+        
         req2_sheet=wb_listas['Requerimientos-12']
         hist_req_sheet=wb_req['Requerimientos']
+        
         
         self.lista_encargado=[]
         self.lista_tipo_cont=[]
@@ -203,10 +241,10 @@ class ww_nuevo_requerimiento12(wx.Frame):
         for cell in req2_sheet['C']:
             if cell.value != None:
                 self.lista_tipo_transp.append(cell.value)
-        for cell in req2_sheet['D']:
+        for cell in req2_sheet['E']:
             if cell.value != None:
                 self.lista_descargue.append(cell.value)   
-        for cell in req2_sheet['E']:
+        for cell in req2_sheet['F']:
             if cell.value != None:
                 self.lista_debe_enviarinfo.append(cell.value)
         
@@ -279,7 +317,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.lbltelefono_siso =wx.StaticText(self.panel, label='Telefono')
         self.lbldebeinfo =wx.StaticText(self.panel, label='Debe Enviarse\n Informacion')
         self.lblhorasantes =wx.StaticText(self.panel, label='N° Horas Antes')
-        #self.lbl =wx.StaticText(self.panel, label='')
         self.lbltitle2.SetFont(title_font)
         self.lblinfocliente.SetFont(title_font)
 
@@ -306,7 +343,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.lbltelefono_siso.SetBackgroundColour(principal_color)
         self.lbldebeinfo.SetBackgroundColour(principal_color)
         self.lblhorasantes.SetBackgroundColour(principal_color)
-        
         
         self.lbltitle1.SetForegroundColour('white')
         self.lbltitle2.SetForegroundColour('white')
@@ -431,6 +467,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
     def guardar_req(self,event):
         
         hist_req_sheet=wb_req['Requerimientos']
+        req2_sheet=wb_listas['Requerimientos-12']
         
         self.fila_vacia = 1
         
@@ -461,8 +498,25 @@ class ww_nuevo_requerimiento12(wx.Frame):
             check_peaje="Si"
         else:
             check_peaje="No"
+         
+        self.dic_asosiacion={}
+        self.lista_asociacion=[]
+        self.lista_tipo_transp2=[]
+        
+        for cell in req2_sheet['D']:
+            if cell != None:
+                self.lista_asociacion.append(cell.value)
+        
+        for cell in req2_sheet['C']:
+            if cell != None:
+                self.lista_tipo_transp2.append(cell.value)
+        
+        
+        for i in range((len(self.lista_tipo_transp2))):
+            self.dic_asosiacion[self.lista_tipo_transp2[i]]=self.lista_asociacion[i]
 
         hist_req_sheet.cell(row=self.fila_vacia, column=col_requerimiento_auto).value=requerimiento_auto
+        hist_req_sheet.cell(row=self.fila_vacia, column=col_area).value=self.dic_asosiacion[tipotransporte]
         hist_req_sheet.cell(row=self.fila_vacia, column=col_fecha_auto).value=fecha_auto
         hist_req_sheet.cell(row=self.fila_vacia, column=col_cotizacion).value=cotizacion
         hist_req_sheet.cell(row=self.fila_vacia, column=col_tipotransporte).value=tipotransporte
@@ -504,25 +558,32 @@ class ww_nuevo_requerimiento12(wx.Frame):
             for cell in hist_req_sheet['A']:
                 if cell.value !=None:
                     self.lista_nro_req.append(cell.value)
-            self.nro_req= int(self.lista_nro_req[-1])+1        
+            self.nro_req= int(self.lista_nro_req[-1])+1    
+            self.Destroy()
             self.lblrequerimiento_auto.SetLabel(str(self.nro_req))
+            
         except:
-            success_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.OK)
-            success_msgbox.ShowModal()
-        
-        
+            error_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.ICON_ERROR)
+            error_msgbox.ShowModal()
+
 
     def salir(self,event):
-        pass
+        self.Destroy()
     
-    def adicionar_transp(self,event):
+    def adicionar_transp(self,event,message):
         hist_req_sheet=wb_req['Requerimientos']
+        req2_sheet=wb_listas['Requerimientos-12']
+        print('hola')
+        print({message})
         self.fila_vacia = 1
         
         while (hist_req_sheet.cell(row = self.fila_vacia, column = 1).value != None) :
           self.fila_vacia += 1
         
         self.nro_req=self.fila_vacia-1
+        
+        ultima_area=hist_req_sheet.cell(row=(self.fila_vacia), column=col_area_req).value
+        
         
         requerimiento_auto=self.lblrequerimiento_auto.GetLabel()
         fecha_auto=self.lblfecha_auto.GetLabel()
@@ -546,8 +607,26 @@ class ww_nuevo_requerimiento12(wx.Frame):
             check_peaje="Si"
         else:
             check_peaje="No"
+            
+        self.dic_asosiacion={}
+        self.lista_asociacion=[]
+        self.lista_tipo_transp2=[]
+        
+        for cell in req2_sheet['D']:
+            if cell != None:
+                self.lista_asociacion.append(cell.value)
+        
+        for cell in req2_sheet['C']:
+            if cell != None:
+                self.lista_tipo_transp2.append(cell.value)
+        
+        
+        for i in range((len(self.lista_tipo_transp2))):
+            self.dic_asosiacion[self.lista_tipo_transp2[i]]=self.lista_asociacion[i]
         
         hist_req_sheet.cell(row=self.fila_vacia, column=col_requerimiento_auto).value=requerimiento_auto
+        hist_req_sheet.cell(row=self.fila_vacia, column=col_area_req).value=ultima_area
+        hist_req_sheet.cell(row=self.fila_vacia, column=col_area).value=self.dic_asosiacion[tipotransporte]
         hist_req_sheet.cell(row=self.fila_vacia, column=col_fecha_auto).value=fecha_auto
         hist_req_sheet.cell(row=self.fila_vacia, column=col_cotizacion).value=cotizacion
         hist_req_sheet.cell(row=self.fila_vacia, column=col_tipotransporte).value=tipotransporte
@@ -640,8 +719,10 @@ class ww_logistica21(wx.Frame):
         for cell in hist_req_sheet['A']:
             if cell.value !=None:
                 self.lista_nro_req.append(cell.value)
+        global req_selec
+        req_selec=self.txtreq.GetValue()
                 
-        if self.txtreq.GetValue() in self.lista_nro_req:
+        if req_selec in self.lista_nro_req:
             ww_nuevo_requerimiento22(parent=self.panel).Show() 
             self.Destroy()
         else:
@@ -651,15 +732,23 @@ class ww_logistica21(wx.Frame):
 class ww_nuevo_requerimiento22(wx.Frame):
     def __init__(self,parent):    
           
-        hist_req_sheet=wb_req['Requerimientos']
+        self.hist_req_sheet=wb_req['Requerimientos']
+        global req_selec
         
-                
+        self.lista_requerimientos=[]
         
+        for cell in self.hist_req_sheet['A']:
+            if cell.value != None:
+                self.lista_requerimientos.append(cell.value)
+
+        self.nro_fila_req=int(self.lista_requerimientos.index(req_selec))+1
         
-        
+        self.lista_valores_fila=[]
+        for cell in self.hist_req_sheet[self.nro_fila_req]:
+            self.lista_valores_fila.append(cell.value)
         
         #----------Front------------#
-        wx.Frame.__init__(self, None, wx.ID_ANY, "Contenedores de Antioquia - Centro Logistico", size=(900, 700))
+        wx.Frame.__init__(self, None, wx.ID_ANY, "Contenedores de Antioquia - Centro Logistico", size=(950, 600))
         try:
             #image_file = 'CINCO CONSULTORES.jpg'
             #bmp1 = wx.Image(
@@ -711,25 +800,25 @@ class ww_nuevo_requerimiento22(wx.Frame):
         self.lbladiciones=wx.StaticText(self.panel, label='Adiciones Entrega')
         self.lblpreguntahoras=wx.StaticText(self.panel, label='Documentacion Enviada x Horas Antes?')
         self.lblpreguntadoc=wx.StaticText(self.panel, label='Documentacion Completa?')
-        self.lblrptarequerimiento=wx.StaticText(self.panel, label='')
-        self.lblrptafecha=wx.StaticText(self.panel, label='')
-        self.lblrptaareaencargada=wx.StaticText(self.panel, label='')
-        self.lblrptacotizacion=wx.StaticText(self.panel, label='')
-        self.lblrptatipotransp=wx.StaticText(self.panel, label='')
-        self.lblrptatipocont=wx.StaticText(self.panel, label='')
-        self.lblrptadescargue=wx.StaticText(self.panel, label='')
-        self.lblrptaorigen=wx.StaticText(self.panel, label='')
-        self.lblrptadestino=wx.StaticText(self.panel, label='')
-        self.lblrptakm=wx.StaticText(self.panel, label='')
-        self.lblrptaprecio=wx.StaticText(self.panel, label='')
-        self.lblrptarecargopeaje=wx.StaticText(self.panel, label='')
-        self.lblrptanombreresp=wx.StaticText(self.panel, label='')
-        self.lblrptatelresp=wx.StaticText(self.panel, label='')
-        self.lblrptacargoresp=wx.StaticText(self.panel, label='')
-        self.lblrptanombresiso=wx.StaticText(self.panel, label='')
-        self.lblrptatelesiso=wx.StaticText(self.panel, label='')
-        self.lblrptadebeinfo=wx.StaticText(self.panel, label='')
-        self.lblrptahorasantes=wx.StaticText(self.panel, label='')
+        self.lblrptarequerimiento=wx.StaticText(self.panel, label=self.lista_valores_fila[col_requerimiento_auto-1])
+        self.lblrptafecha=wx.StaticText(self.panel, label=self.lista_valores_fila[col_fecha_auto-1])
+        self.lblrptaareaencargada=wx.StaticText(self.panel, label=self.lista_valores_fila[col_area-1])
+        self.lblrptacotizacion=wx.StaticText(self.panel, label=self.lista_valores_fila[col_cotizacion-1])
+        self.lblrptatipotransp=wx.StaticText(self.panel, label=self.lista_valores_fila[col_tipotransporte-1])
+        self.lblrptatipocont=wx.StaticText(self.panel, label=self.lista_valores_fila[col_tipocontenedor-1])
+        self.lblrptadescargue=wx.StaticText(self.panel, label=self.lista_valores_fila[col_requieredescargue-1])
+        self.lblrptaorigen=wx.StaticText(self.panel, label=self.lista_valores_fila[col_origen-1])
+        self.lblrptadestino=wx.StaticText(self.panel, label=self.lista_valores_fila[col_destino-1])
+        self.lblrptakm=wx.StaticText(self.panel, label=self.lista_valores_fila[col_km-1])
+        self.lblrptaprecio=wx.StaticText(self.panel, label=self.lista_valores_fila[col_precio-1])
+        self.lblrptarecargopeaje=wx.StaticText(self.panel, label=self.lista_valores_fila[col_recargopeaje-1])
+        self.lblrptanombreresp=wx.StaticText(self.panel, label=self.lista_valores_fila[col_nombreresponsable-1])
+        self.lblrptatelresp=wx.StaticText(self.panel, label=self.lista_valores_fila[col_telefono_resp-1])
+        self.lblrptacargoresp=wx.StaticText(self.panel, label=self.lista_valores_fila[col_cargo-1])
+        self.lblrptanombresiso=wx.StaticText(self.panel, label=self.lista_valores_fila[col_nombresiso-1])
+        self.lblrptatelesiso=wx.StaticText(self.panel, label=self.lista_valores_fila[col_telefono_siso-1])
+        self.lblrptadebeinfo=wx.StaticText(self.panel, label=self.lista_valores_fila[col_debeinfo-1])
+        self.lblrptahorasantes=wx.StaticText(self.panel, label=str(self.lista_valores_fila[col_horasantes-1]))
         self.txtfechaentrega=wx.TextCtrl(self.panel)
         self.txtdireccion=wx.TextCtrl(self.panel)
         self.txtreferenciacont=wx.TextCtrl(self.panel)
@@ -737,7 +826,7 @@ class ww_nuevo_requerimiento22(wx.Frame):
         self.txtcedula=wx.TextCtrl(self.panel)
         self.txttelefonoconduc=wx.TextCtrl(self.panel)
         self.txtplaca=wx.TextCtrl(self.panel)
-        self.txtadiciones=wx.TextCtrl(self.panel)
+        self.txtadiciones=wx.TextCtrl(self.panel,style = wx.TE_MULTILINE)
         self.checkpreguntahoras_si=wx.CheckBox(self.panel, label= "Si")
         self.checkpreguntahoras_no=wx.CheckBox(self.panel, label= "No")
         self.checkpreguntadoc_si=wx.CheckBox(self.panel, label= "Si")
@@ -798,7 +887,6 @@ class ww_nuevo_requerimiento22(wx.Frame):
         self.checkpreguntadoc_si.SetBackgroundColour(principal_color)
         self.checkpreguntadoc_no.SetBackgroundColour(principal_color)
 
-    
         self.lblrequerimiento.SetForegroundColour('white')
         self.lblfecha.SetForegroundColour('white')
         self.lblareaencargada.SetForegroundColour('white')
@@ -857,7 +945,6 @@ class ww_nuevo_requerimiento22(wx.Frame):
         btn_imprimir = wx.Button(self.panel, id=wx.ID_ANY, label="Imprimir Remision",size=(-1,-1))
         btn_finalizar = wx.Button(self.panel, id=wx.ID_ANY, label="Finalizar",size=(-1,-1))
 
-        
         self.fgs.Add(self.lblrequerimiento, pos=(1,1),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.lblfecha, pos=(2,1),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.lblareaencargada, pos=(1,7),span=(1,1), flag= wx.ALL, border=5)
@@ -922,12 +1009,147 @@ class ww_nuevo_requerimiento22(wx.Frame):
         self.fgs.Add(self.checkpreguntadoc_no, pos=(19,3),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(btn_finalizar, pos=(19,8),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(btn_imprimir, pos=(19,7),span=(1,1), flag= wx.ALL, border=5)
-
+        
+        self.checkpreguntahoras_si.Bind(wx.EVT_CHECKBOX, self.onCheckhoras_si)
+        self.checkpreguntahoras_no.Bind(wx.EVT_CHECKBOX, self.onCheckhoras_no)
+        
+        self.checkpreguntadoc_si.Bind(wx.EVT_CHECKBOX, self.onCheckdoc_si)
+        self.checkpreguntadoc_no.Bind(wx.EVT_CHECKBOX, self.onCheckdoc_no)
+        
+        
+        
+        btn_finalizar.Bind(wx.EVT_BUTTON, self.finalizar)
+        btn_imprimir.Bind(wx.EVT_BUTTON, self.imprimir)
+       
         mainSizer= wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(self.fgs,0, flag=wx.ALIGN_LEFT)
         self.panel.SetSizerAndFit(mainSizer)
         
+
+  
+    def onCheckhoras_si(self,event):
+        if self.checkpreguntahoras_no.IsChecked():
+            self.checkpreguntahoras_no.SetValue(False)
+            
+    def onCheckhoras_no(self,event):
+        if self.checkpreguntahoras_si.IsChecked():
+            self.checkpreguntahoras_si.SetValue(False)
+            
+    def onCheckdoc_si(self,event):
+        if self.checkpreguntadoc_no.IsChecked():
+            self.checkpreguntadoc_no.SetValue(False)
+            
+    def onCheckdoc_no(self,event):
+        if self.checkpreguntadoc_si.IsChecked():
+            self.checkpreguntadoc_si.SetValue(False)
+            
+            
         
+    def finalizar(self,event):
+        
+        fechaentrega=self.txtfechaentrega.GetValue()
+        direccion=self.txtdireccion.GetValue()
+        referenciacont=self.txtreferenciacont.GetValue()
+        nombreconduc=self.txtnombreconduc.GetValue()
+        cedula=self.txtcedula.GetValue()
+        telefonoconduc=self.txttelefonoconduc.GetValue()
+        placa=self.txtplaca.GetValue()
+        adiciones=self.txtadiciones.GetValue()
+        
+        if self.checkpreguntahoras_si.IsChecked():
+            check_horas="Si"
+        else:
+            check_peaje="No"
+        
+        if self.checkpreguntadoc_si.IsChecked():
+            check_doc="Si"
+        else:
+            check_doc="No"
+
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_fechaentrega).value=fechaentrega
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_direccion).value=direccion
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_referenciacont).value=referenciacont
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_nombreconduc).value=nombreconduc
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_cedula).value=cedula
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_telefonoconduc).value=telefonoconduc
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_placa).value=placa
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_adiciones).value=adiciones
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_preguntahoras).value=check_horas
+        self.hist_req_sheet.cell(row=self.nro_fila_req, column=col_preguntadoc).value=check_doc
+
+        try:
+            wb_req.save('db_req.xlsx')
+            sgto_msgbox=wx.MessageDialog(None,'Recuerde Hacer el Seguimiento','Recuerde!',wx.ICON_WARNING)
+            sgto_msgbox.ShowModal()
+            self.Destroy()
+        except:
+            error_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.ICON_ERROR)
+            error_msgbox.ShowModal()
+        
+        
+    def imprimir(self, event):
+        pass
+    
+class ww_configuracion(wx.Frame):   
+    
+    def __init__(self,parent):
+   
+        
+        ######----------------------------------------FRONT END----------------------------------------#############
+        
+        wx.Frame.__init__(self, None, wx.ID_ANY, "Contenedores de Antioquia - Centro Logistico", size=(250, 250))  
+        
+        try:
+            
+            #image_file = 'CINCO CONSULTORES.jpg'
+            #bmp1 = wx.Image(
+                #image_file, 
+                #wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            
+            #self.panel = wx.StaticBitmap(
+                #self, -1, bmp1, (0, 0)
+            self.panel=wx.Panel(self)
+            self.panel.SetBackgroundColour(principal_color)
+
+        except IOError:
+            print ("Image file %s not found"  )
+            raise SystemExit
+        
+        ico = wx.Icon('Cont.ico', wx.BITMAP_TYPE_ICO)
+        self.SetIcon(ico)
+        self.fgs= wx.GridBagSizer(0,0)
+        
+        title_font= wx.Font(10, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+       
+        self.lbltitle =wx.StaticText(self.panel, label='Ingrese Contraseña')
+        self.lbltitle.SetFont(title_font)
+        self.lbltitle.SetBackgroundColour(principal_color)
+        self.lbltitle.SetForegroundColour('white')
+        self.fgs.Add(self.lbltitle,pos=(2,1),span=(1,3), flag=wx.ALL | wx.ALIGN_CENTER, border=5)
+
+        self.txtpass = wx.TextCtrl(self.panel, style= wx.TE_PASSWORD)
+        self.fgs.Add(self.txtpass , pos=(3,1),span=(1,3), flag= wx.ALL | wx.EXPAND, border=5)
+        
+        btn_aceptar = wx.Button(self.panel, id=wx.ID_ANY, label="Aceptar",size=(-1,-1))
+        self.fgs.Add(btn_aceptar, pos=(6,1),span=(1,3), flag= wx.ALL | wx.ALIGN_CENTER, border=0)
+        btn_aceptar.Bind(wx.EVT_BUTTON, self.onBtn_aceptar)
+
+        mainSizer= wx.BoxSizer(wx.VERTICAL)
+        mainSizer.Add(self.fgs,0, flag=wx.ALIGN_CENTER)
+        self.panel.SetSizerAndFit(mainSizer)
+        
+    #-------------Button Functions-----------------#            
+    def onBtn_aceptar(self, event):
+        self.config_sheet=wb_listas['Config']
+        
+        self.Destroy()
+        #ww_nuevo_requerimiento12(parent=self.panel).Show()
+
+    #-------------Button Functions-----------------# 
+        
+#############----------------------------------------FRONT END----------------------------------------#############
+        
+
 class MyApp(wx.App):
     def OnInit(self):
         self.frame= MyFrame()

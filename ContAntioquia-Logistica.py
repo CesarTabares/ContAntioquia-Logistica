@@ -70,21 +70,26 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_KEY_UP, self.OnKeyDown)
         self.SetBackgroundColour(secondary_color)
         self.panel = MainPanel(self)
+        panel_font= wx.Font(10, wx.DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
+        self.panel.SetFont(panel_font)
+        
         
         self.Center()
         ico = wx.Icon('Cont.ico', wx.BITMAP_TYPE_ICO)
         self.SetIcon(ico)
         self.fgs= wx.GridBagSizer(0,0)
         
-        title_font= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_LIGHT)
-       
+        title_font= wx.Font(15, wx.DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
+        
+
         self.lbltitle =wx.StaticText(self.panel, label='Bienvenido al Centro Logistico de Contenedores de Antioquia')
         self.lbltitle.SetFont(title_font)
+        
         self.lbltitle.SetBackgroundColour(secondary_color)
         self.lbltitle.SetForegroundColour(principal_color)
-        self.fgs.Add(self.lbltitle,pos=(6,1),span=(1,4), flag=wx.ALL | wx.ALIGN_CENTER, border=0)
+        self.fgs.Add(self.lbltitle,pos=(6,1),span=(1,4), flag=wx.LEFT | wx.ALIGN_CENTER, border=9)
         
-        self.lbltitle2 =wx.StaticText(self.panel, label='¿Que Desea Hacer?')
+        self.lbltitle2 =wx.StaticText(self.panel, label=' Que Desea Hacer ?')
         self.lbltitle2.SetFont(title_font)
         self.lbltitle2.SetBackgroundColour(secondary_color)
         self.lbltitle2.SetForegroundColour(principal_color)
@@ -181,6 +186,8 @@ class ww_nuevo_requerimiento11(wx.Frame):
             #self.panel = wx.StaticBitmap(
                 #self, -1, bmp1, (0, 0)
             self.panel=wx.Panel(self)
+            panel_font= wx.Font(10, wx.DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
+            self.panel.SetFont(panel_font)
             self.panel.SetBackgroundColour(secondary_color)
 
         except IOError:
@@ -191,7 +198,7 @@ class ww_nuevo_requerimiento11(wx.Frame):
         self.SetIcon(ico)
         self.fgs= wx.GridBagSizer(0,0)
         
-        title_font= wx.Font(10, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        title_font= wx.Font(11, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
        
         self.lbltitle =wx.StaticText(self.panel, label='Nuevo Requerimiento Por:')
         self.lbltitle.SetFont(title_font)
@@ -291,23 +298,23 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         ######----------------------------------------FRONT END----------------------------------------#############
         
-        wx.Frame.__init__(self, None, wx.ID_ANY, "Centro Logistico", size=(1000, 570),style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))  
+        wx.Frame.__init__(self, None, wx.ID_ANY, "Centro Logistico", size=(930, 570),style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))  
         self.SetBackgroundColour(secondary_color)
         self.panel = NuevoReqPanel(self)
-        
+        panel_font= wx.Font(10, wx.DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
+        self.panel.SetFont(panel_font)
         self.Center()
                 
         ico = wx.Icon('Cont.ico', wx.BITMAP_TYPE_ICO)
         self.SetIcon(ico)
         self.fgs= wx.GridBagSizer(0,0)
-        title_font= wx.Font(25, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-        title_font2= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        title_font3= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-        bold_font= wx.Font(70, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        title_font= wx.Font(25, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Bold")
+        title_font3= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Bold")
+        bold_font= wx.Font(10, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Bold")
         
         self.lbltitle2 =wx.StaticText(self.panel, label='CENTRO LOGISTICO')
-        self.lblrequerimiento =wx.StaticText(self.panel, label='Requerimiento N°')
-        self.lblrequerimiento_auto =wx.StaticText(self.panel, label=str(self.nro_req))
+        self.lblrequerimiento =wx.StaticText(self.panel, label='Requerimiento N° ' + str(self.nro_req))
+        self.requerimiento_auto =(self.nro_req)
         self.lblfecha =wx.StaticText(self.panel, label='Fecha')
         self.lblfecha_auto =wx.StaticText(self.panel, label=datetime.today().strftime('%d-%m-%Y')) #-%H:%M:%S
         self.lblarea_req =wx.StaticText(self.panel, label='Req. Por: ')
@@ -327,14 +334,13 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.lblcargo =wx.StaticText(self.panel, label='Cargo')
         self.lblnombresiso =wx.StaticText(self.panel, label='Nombre SISO')
         self.lbltelefono_siso =wx.StaticText(self.panel, label='Telefono')
-        self.lbldebeinfo =wx.StaticText(self.panel, label='Debe Enviarse Informacion')
+        self.lbldebeinfo =wx.StaticText(self.panel, label='Debe Enviarse\nInformacion')
         self.lblhorasantes =wx.StaticText(self.panel, label='N° Horas Antes')
         
         self.lbltitle2.SetFont(title_font)
         self.lblinfocliente.SetFont(title_font3)
         
         self.lblrequerimiento.SetFont(bold_font)
-        self.lblrequerimiento_auto.SetFont(bold_font)
         self.lblfecha.SetFont(bold_font)
         self.lblfecha_auto.SetFont(bold_font)
         self.lblcotizacion.SetFont(bold_font)
@@ -355,7 +361,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.lblhorasantes.SetFont(bold_font)
         
         self.lblrequerimiento.SetFont(title_font3)
-        self.lblrequerimiento_auto.SetFont(title_font3)
         self.lblfecha.SetFont(title_font3)
         self.lblfecha_auto.SetFont(title_font3)
         self.lblarea_req.SetFont(bold_font)
@@ -364,7 +369,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         self.lbltitle2.SetBackgroundColour(secondary_color)
         self.lblrequerimiento.SetBackgroundColour(secondary_color)
-        self.lblrequerimiento_auto.SetBackgroundColour(secondary_color)
         self.lblfecha.SetBackgroundColour(secondary_color)
         self.lblfecha_auto.SetBackgroundColour(secondary_color)
         self.lblarea_req.SetBackgroundColour(secondary_color)
@@ -390,7 +394,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         self.lbltitle2.SetForegroundColour(principal_color)
         self.lblrequerimiento.SetForegroundColour(principal_color)
-        self.lblrequerimiento_auto.SetForegroundColour(principal_color)
         self.lblfecha.SetForegroundColour(principal_color)
         self.lblfecha_auto.SetForegroundColour(principal_color)
         self.lblarea_req.SetForegroundColour(principal_color)
@@ -412,7 +415,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.lbltelefono_siso.SetForegroundColour(principal_color)
         self.lbldebeinfo.SetForegroundColour(principal_color)
         self.lblhorasantes.SetForegroundColour(principal_color)
-        #self.lbl =wx.StaticText(self.panel, label='')
         
         self.txtcotizacion=wx.TextCtrl(self.panel)
         self.txtorigen=wx.TextCtrl(self.panel,validator=CustomNumValidator())
@@ -429,7 +431,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.combotipotransporte=wx.ComboBox(self.panel,value=self.lista_tipo_transp[0], choices=self.lista_tipo_transp)
         self.combotipocontenedor=wx.ComboBox(self.panel,value=self.lista_tipo_cont[0], choices=self.lista_tipo_cont)
         self.comborequieredescargue=wx.ComboBox(self.panel,value=self.lista_descargue[0], choices=self.lista_descargue)
-        #self.combodebeinfo=wx.ComboBox(self.panel,value=self.lista_debe_enviarinfo[0], choices=self.lista_debe_enviarinfo)
         
         self.check_si_peaje = wx.CheckBox(self.panel, label= "Si")
         self.check_no_peaje = wx.CheckBox(self.panel, label='No')
@@ -477,8 +478,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
 
         
         self.fgs.Add(self.lbltitle2 , pos=(1,1),span=(1,8), flag= wx.ALL | wx.ALIGN_CENTER, border=5)
-        self.fgs.Add(self.lblrequerimiento , pos=(2,1),span=(1,1), flag= wx.ALL|wx.ALIGN_BOTTOM, border=5)
-        self.fgs.Add(self.lblrequerimiento_auto, pos=(2,2),span=(1,1), flag= wx.ALL|wx.ALIGN_BOTTOM, border=5)
+        self.fgs.Add(self.lblrequerimiento , pos=(2,1),span=(1,2), flag= wx.ALL|wx.ALIGN_BOTTOM, border=5)
         self.fgs.Add(self.lblfecha , pos=(2,7),span=(1,1), flag= wx.ALL | wx.ALIGN_RIGHT |wx.ALIGN_BOTTOM, border=0)
         self.fgs.Add(self.lblfecha_auto , pos=(2,8),span=(1,1), flag= wx.LEFT|wx.ALIGN_BOTTOM, border=5)
         self.fgs.Add(self.lblarea_req , pos=(3,7),span=(1,1), flag= wx.ALL|wx.ALIGN_TOP | wx.ALIGN_RIGHT, border=0)
@@ -561,9 +561,12 @@ class ww_nuevo_requerimiento12(wx.Frame):
         while (hist_req_sheet.cell(row = self.fila_vacia, column = 1).value != None) :
           self.fila_vacia += 1
         
-        self.nro_req=self.fila_vacia-1
+        for cell in hist_req_sheet['A']:
+                if cell.value !=None:
+                    self.lista_nro_req.append(cell.value)
+        self.nro_req=int(self.lista_nro_req[-1])+1
 
-        requerimiento_auto=self.lblrequerimiento_auto.GetLabel()
+        requerimiento_auto=self.nro_req
         fecha_auto=self.lblfecha_auto.GetLabel()
         cotizacion=self.txtcotizacion.GetValue()
         tipotransporte=self.combotipotransporte.GetValue()
@@ -651,13 +654,14 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         try:
             wb_req.save('db_req.xlsx')
+            print('Si')
             for cell in hist_req_sheet['A']:
                 if cell.value !=None:
                     self.lista_nro_req.append(cell.value)
             self.nro_req= int(self.lista_nro_req[-1])+1    
             self.Destroy()
-            self.lblrequerimiento_auto.SetLabel(str(self.nro_req))
             
+             
         except:
             error_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.ICON_ERROR)
             error_msgbox.ShowModal()
@@ -680,10 +684,13 @@ class ww_nuevo_requerimiento12(wx.Frame):
         while (hist_req_sheet.cell(row = self.fila_vacia, column = 1).value != None) :
           self.fila_vacia += 1
         
-        self.nro_req=self.fila_vacia-1
+        for cell in hist_req_sheet['A']:
+                if cell.value !=None:
+                    self.lista_nro_req.append(cell.value)
+        self.nro_req=int(self.lista_nro_req[-1])+1
        
         
-        requerimiento_auto=self.lblrequerimiento_auto.GetLabel()
+        requerimiento_auto=self.nro_req
         fecha_auto=self.lblfecha_auto.GetLabel()
         cotizacion=self.txtcotizacion.GetValue()
         tipotransporte=self.combotipotransporte.GetValue()
@@ -756,12 +763,16 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         try:
             wb_req.save('db_req.xlsx')
+            self.lista_nro_req=[]
             for cell in hist_req_sheet['A']:
                 if cell.value !=None:
                     self.lista_nro_req.append(cell.value)
-            self.nro_req= int(self.lista_nro_req[-1])+1        
-            self.lblrequerimiento_auto.SetLabel(str(self.nro_req))
-        except:
+            print(self.lista_nro_req)
+            self.nro_req= int(self.lista_nro_req[-1])+1 
+            print(self.nro_req)
+            self.lblrequerimiento.SetLabel(label='Requerimiento N° ' + str(self.nro_req))
+        except Exception as e:
+            print(e)
             error_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.ICON_ERROR)
             error_msgbox.ShowModal()        
 
@@ -795,8 +806,7 @@ class ww_logistica21(wx.Frame):
         
         wb_listas=openpyxl.load_workbook('Config.xlsx')
         wb_req=openpyxl.load_workbook('db_req.xlsx')
-               
-        
+
         wx.Frame.__init__(self, None, wx.ID_ANY, "Centro Logistico", size=(270, 250),style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))  
         self.SetBackgroundColour(secondary_color)
         self.Center()
@@ -810,6 +820,7 @@ class ww_logistica21(wx.Frame):
             #self.panel = wx.StaticBitmap(
                 #self, -1, bmp1, (0, 0)
             self.panel=wx.Panel(self)
+            panel_font= wx.Font(10, wx.DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
             self.panel.SetBackgroundColour(secondary_color)
 
         except IOError:
@@ -820,7 +831,7 @@ class ww_logistica21(wx.Frame):
         self.SetIcon(ico)
         self.fgs= wx.GridBagSizer(0,0)
         
-        title_font= wx.Font(10, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        title_font= wx.Font(11, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
        
         self.lbltitle =wx.StaticText(self.panel, label='Ingrese Numero de Requerimiento\n a Gestionar:')
         self.lbltitle.SetFont(title_font)
@@ -888,8 +899,10 @@ class ww_logistica22(wx.Frame):
             self.lista_valores_fila.append(cell.value)
         
         #----------Front------------#
-        wx.Frame.__init__(self, None, wx.ID_ANY, "Centro Logistico", size=(1010, 670),style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+        wx.Frame.__init__(self, None, wx.ID_ANY, "Centro Logistico", size=(1020, 670),style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
         self.panel = LogisticaPanel(self)
+        panel_font= wx.Font(10, wx.DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Normal")
+        self.panel.SetFont(panel_font)
         self.SetBackgroundColour(secondary_color)
         self.Center()
         
@@ -897,10 +910,9 @@ class ww_logistica22(wx.Frame):
         self.SetIcon(ico)
         self.fgs= wx.GridBagSizer(0,0)
         
-        title_font= wx.Font(25, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-        title_font2= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        title_font3= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
-        bold_font= wx.Font(70, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        title_font= wx.Font(25, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Bold")
+        title_font3= wx.Font(15, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Bold")
+        bold_font= wx.Font(10, wx.FONTFAMILY_DECORATIVE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL,underline=False,faceName="Folks-Bold")
     
         
         self.lbltitle=wx.StaticText(self.panel, label='LOGISTICA')
@@ -1102,7 +1114,7 @@ class ww_logistica22(wx.Frame):
         self.fgs.Add(self.lbltitle,pos=(1,1),span=(1,8), flag= wx.ALL  | wx.ALIGN_CENTER, border=5)
         self.fgs.Add(self.lblrequerimiento,pos=(2,1),span=(1,2), flag= wx.ALL, border=0)
         self.fgs.Add(self.lblfecha,pos=(3,1),span=(1,1), flag= wx.ALL, border=0)
-        self.fgs.Add(self.lblareaencargada,pos=(4,1),span=(1,1), flag= wx.ALL, border=0)
+        self.fgs.Add(self.lblareaencargada,pos=(4,1),span=(1,2), flag= wx.ALL, border=0)
         self.fgs.Add(self.lblcotizacion,pos=(7,1),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.lbltipotransp,pos=(8,1),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.lbltipocont,pos=(9,1),span=(1,1), flag= wx.ALL, border=5)
@@ -1150,7 +1162,7 @@ class ww_logistica22(wx.Frame):
         self.fgs.Add(self.txtfechaentrega,pos=(13,2),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.txtdireccion,pos=(13,4),span=(1,3), flag= wx.ALL | wx.EXPAND, border=5)
         self.fgs.Add(self.txtreferenciacont,pos=(13,8),span=(1,1), flag= wx.ALL, border=5)
-        self.fgs.Add(self.txtnombreconduc,pos=(15,4),span=(1,1), flag= wx.ALL | wx.EXPAND, border=5)
+        self.fgs.Add(self.txtnombreconduc,pos=(15,4),span=(1,2), flag= wx.ALL | wx.EXPAND, border=5)
         self.fgs.Add(self.txtcedula,pos=(15,3),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.txttelefonoconduc,pos=(15,2),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.txtplaca,pos=(15,1),span=(1,1), flag= wx.ALL, border=5)
@@ -1278,8 +1290,7 @@ class ww_configuracion(wx.Frame):
     
     def __init__(self,parent):
    
-        
-        ######----------------------------------------FRONT END----------------------------------------#############
+
         
         wx.Frame.__init__(self, None, wx.ID_ANY, "Contenedores de Antioquia - Centro Logistico", size=(250, 250))  
         
@@ -1331,7 +1342,7 @@ class ww_configuracion(wx.Frame):
 
     #-------------Button Functions-----------------# 
         
-#############----------------------------------------FRONT END----------------------------------------#############
+
  
 class CustomNumValidator(wx.Validator):
     """ Validator for entering custom low and high limits """

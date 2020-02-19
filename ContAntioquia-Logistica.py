@@ -10,6 +10,8 @@ from copy import deepcopy
 
 import wx
 import openpyxl
+import smtplib
+from email.message import EmailMessage
 
 
 col_requerimiento_auto=1
@@ -693,6 +695,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.precio_final(hist_req_sheet)
         
         
+        
         try:
             wb_req.save(path_db)
             
@@ -718,10 +721,26 @@ class ww_nuevo_requerimiento12(wx.Frame):
             self.check_no_info.SetValue(False)
             self.check_si_info.SetValue(False)
             
+              
+            
+            sheet_config=wb_listas['Config']
+            area_correo=self.dic_asosiacion[tipotransporte]
+            
+            if area_correo=='Operaciones':
+                receiver=sheet_config.cell(row=5, column=2).value
+                
+            elif area_correo=='Administracion':
+                receiver=sheet_config.cell(row=6,column=2).value
+            else:
+                receiver=sheet_config.cell(row=7,column=2).value
+
+            self.enviar_email(receiver, self.nro_req, area_correo)
+            
+            
             for cell in hist_req_sheet['A']:
                 if cell.value !=None:
                     self.lista_nro_req.append(cell.value)
-            self.nro_req= int(self.lista_nro_req[-1])+1    
+            self.nro_req= int(self.lista_nro_req[-1])+1 
             self.Destroy()
             
              
@@ -729,6 +748,54 @@ class ww_nuevo_requerimiento12(wx.Frame):
             print(e)
             error_msgbox=wx.MessageDialog(None,'Error al guardar el registro en la BD. \nVerifique el el archivo de excel este cerrado y en la ruta correcta.','ERROR',wx.ICON_ERROR)
             error_msgbox.ShowModal()
+        
+    
+    def enviar_email(self, receiver, nro_req, area_encargada):
+        
+        EMAIL_ADDRESS='requerimientologisticocontant@gmail.com'
+        EMAIL_PASSWORD='pewljcgvqnrjhegz'
+        
+        msg = EmailMessage()
+        msg['Subject'] = 'Nuevo Requerimiento Logistico No. ' + str(nro_req) + " // " + str(datetime.today().strftime('%d-%m-%Y'))
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = receiver
+    
+    
+        initial_html="""\
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+        html{
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        h1{
+            color:green;
+        }
+        table{
+            border-collapse: collapse;
+        }
+        th,td{
+            border: 1px solid black;
+        }
+        
+        </style>
+        </head>
+            <body>
+                <h1>Nuevo Requerimiento</h1>
+                <p>Usted Tiene un Nuevo Requerimiento No : """+str(nro_req)+""" </p>
+                <p>Area Encargada : """+area_encargada+""" </p>
+                <p>Favor diríjase al centro logistico para darle tramite al requerimiento </p>
+                <p>Contenedores de Antioquia</p>    
+            </body>
+        </html>"""
+        
+    
+        msg.add_alternative(initial_html, subtype='html')
+    
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            smtp.send_message(msg)
 
 
     def salir(self,event):
@@ -853,8 +920,22 @@ class ww_nuevo_requerimiento12(wx.Frame):
                 if cell.value !=None:
                     self.lista_nro_req.append(cell.value)
             
-            self.nro_req= int(self.lista_nro_req[-1])+1 
             
+            sheet_config=wb_listas['Config']
+            area_correo=self.dic_asosiacion[tipotransporte]
+            
+            if area_correo=='Operaciones':
+                receiver=sheet_config.cell(row=5, column=2).value
+                
+            elif area_correo=='Administracion':
+                receiver=sheet_config.cell(row=6,column=2).value
+            else:
+                receiver=sheet_config.cell(row=7,column=2).value
+
+            self.enviar_email(receiver, self.nro_req, area_correo)
+            
+            
+            self.nro_req= int(self.lista_nro_req[-1])+1 
             self.lblrequerimiento.SetLabel(label='Requerimiento N° ' + str(self.nro_req))
         except Exception as e:
             print(e)

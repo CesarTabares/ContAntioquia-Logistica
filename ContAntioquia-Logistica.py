@@ -7,12 +7,18 @@ Created on Sat Feb  1 07:28:37 2020
 
 from datetime import datetime
 from copy import deepcopy
+from math import ceil
+import urllib3
 
 import wx
 import wx.adv
 import openpyxl
 import smtplib
 from email.message import EmailMessage
+import googlemaps
+
+
+gmaps = googlemaps.Client(key='AIzaSyBB-89AHoMap9i-5CGWjdLin2d30hPwVv4')
 
 
 col_requerimiento_auto=1
@@ -125,6 +131,8 @@ class MyFrame(wx.Frame):
         mainSizer= wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(self.fgs,0, flag=wx.ALIGN_LEFT)
         self.panel.SetSizerAndFit(mainSizer)
+        
+        
             
     #-------------Button Functions-----------------#
     def open_nuevo_req11(self, event):
@@ -141,6 +149,9 @@ class MyFrame(wx.Frame):
         ww_configuracion(parent=self.panel).Show()
 
     #-------------Button Functions-----------------#
+        
+    
+    
 
 class MainPanel(wx.Panel):
 
@@ -226,8 +237,11 @@ class ww_nuevo_requerimiento11(wx.Frame):
         ww_nuevo_requerimiento12(parent=self.panel,message=area_req).Show()
 
 class ww_nuevo_requerimiento12(wx.Frame):
+    
+    
 
     def __init__(self,parent,message):
+        self.internet=self.check_internet_con()
         wb_req=openpyxl.load_workbook(path_db)
         self.area_selec=message
         
@@ -417,8 +431,8 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.lbltipocont.SetForegroundColour(principal_color)
         
         self.txtcotizacion=wx.TextCtrl(self.panel)
-        self.txtorigen=wx.TextCtrl(self.panel)
-        self.txtdestino=wx.TextCtrl(self.panel)
+        self.txtorigen=wx.TextCtrl(self.panel, style = wx.TE_PROCESS_ENTER)
+        self.txtdestino=wx.TextCtrl(self.panel, style = wx.TE_PROCESS_ENTER)
         self.txtkm=wx.TextCtrl(self.panel)
         self.txtprecio=wx.TextCtrl(self.panel)
         self.txtnombreresponsable=wx.TextCtrl(self.panel)
@@ -428,6 +442,13 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.txttelefono_siso=wx.TextCtrl(self.panel)
         self.txthorasantes=wx.TextCtrl(self.panel)
         self.txtnombrecliente=wx.TextCtrl(self.panel)
+        
+        conection=self.check_internet_con()
+        if conection==True:
+            self.txtorigen.Bind(wx.EVT_TEXT_ENTER, self.autocomplete)
+            self.txtorigen.Bind(wx.EVT_KEY_DOWN, self.autocomplete)
+            self.txtdestino.Bind(wx.EVT_TEXT_ENTER, self.autocomplete)
+            self.txtdestino.Bind(wx.EVT_KEY_DOWN, self.autocomplete)
         
         self.combotipotransporte=wx.ComboBox(self.panel,value=self.lista_tipo_transp[0], choices=self.lista_tipo_transp)
         self.combocontenedor=wx.ComboBox(self.panel,value=self.lista_cont[0], choices=self.lista_cont)
@@ -475,10 +496,10 @@ class ww_nuevo_requerimiento12(wx.Frame):
 
         self.fgs.Add(self.txtcotizacion, pos=(4,2),span=(1,1), flag= wx.ALL , border=5)
         self.fgs.Add(self.txtnombrecliente, pos=(4,5),span=(1,2), flag= wx.ALL| wx.EXPAND, border=5)
-        self.fgs.Add(self.txtorigen, pos=(6,4),span=(1,1), flag= wx.ALL, border=5)
-        self.fgs.Add(self.txtdestino, pos=(6,5),span=(1,1), flag= wx.ALL, border=5)
-        self.fgs.Add(self.txtkm, pos=(6,6),span=(1,1), flag= wx.ALL, border=5)
-        self.fgs.Add(self.txtprecio, pos=(8,5),span=(1,1), flag= wx.ALL, border=5)
+        self.fgs.Add(self.txtorigen, pos=(5,5),span=(1,2), flag= wx.ALL|wx.EXPAND , border=5)
+        self.fgs.Add(self.txtdestino, pos=(6,5),span=(1,2), flag= wx.ALL|wx.EXPAND, border=5)
+        self.fgs.Add(self.txtkm, pos=(6,7),span=(1,1), flag= wx.ALL, border=5)
+        self.fgs.Add(self.txtprecio, pos=(7,5),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.txtnombreresponsable, pos=(12,2),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.txttelefono_resp, pos=(12,5),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.txtcorreo, pos=(12,7),span=(1,2), flag= wx.ALL| wx.EXPAND, border=5)
@@ -500,9 +521,9 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.fgs.Add(self.lbltipocont , pos=(8,1),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.lblrequieredescargue, pos=(9,1),span=(1,1), flag= wx.ALL, border=5)
         self.fgs.Add(self.lblorigen , pos=(5,4),span=(1,1), flag= wx.ALL | wx.ALIGN_CENTER, border=0)
-        self.fgs.Add(self.lbldestino , pos=(5,5),span=(1,1), flag= wx.ALL| wx.ALIGN_CENTER, border=0)
-        self.fgs.Add(self.lblkm , pos=(5,6),span=(1,1), flag= wx.ALL| wx.ALIGN_CENTER, border=0)
-        self.fgs.Add(self.lblprecio , pos=(7,5),span=(1,1), flag= wx.ALL |wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL, border=0)
+        self.fgs.Add(self.lbldestino , pos=(6,4),span=(1,1), flag= wx.ALL| wx.ALIGN_CENTER, border=0)
+        self.fgs.Add(self.lblkm , pos=(5,7),span=(1,1), flag= wx.ALL| wx.ALIGN_CENTER, border=0)
+        self.fgs.Add(self.lblprecio , pos=(7,4),span=(1,1), flag= wx.ALL |wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, border=0)
         self.fgs.Add(self.lblrecargotransporte , pos=(7,6),span=(1,2), flag= wx.LEFT |wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL, border=11)
         self.fgs.Add(self.lblinfocliente , pos=(10,1),span=(1,8), flag= wx.ALL| wx.ALIGN_CENTER, border=5)
         self.fgs.Add(self.lblnombreresponsable , pos=(12,1),span=(1,1), flag= wx.ALL, border=5)
@@ -512,7 +533,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.fgs.Add(self.lbltelefono_siso , pos=(14,4),span=(1,1), flag= wx.ALL |wx.ALIGN_RIGHT, border=5)
         self.fgs.Add(self.lbldebeinfo , pos=(15,1),span=(2,1), flag= wx.ALL| wx.ALIGN_CENTER_VERTICAL, border=5)
         self.fgs.Add(self.lblhorasantes , pos=(17,1),span=(1,1), flag= wx.ALL, border=5)
-        
         
         self.check_si_peaje.Bind(wx.EVT_CHECKBOX, self.onCheck_si_peaje)
         self.check_no_peaje.Bind(wx.EVT_CHECKBOX, self.onCheck_no_peaje)
@@ -529,6 +549,47 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         self.txthorasantes.Hide()
         self.lblhorasantes.Hide()
+    
+    def check_internet_con(self):
+        try:
+            http = urllib3.PoolManager(timeout=3.0)
+            r = http.request('GET', 'google.com', preload_content=False)
+            code = r.status
+            r.release_conn()
+            if code == 200:
+                return True
+        except:
+            return False
+    
+    def autocomplete(self, e):
+        txtctrl = e.GetEventObject()
+        
+        if e.GetKeyCode() ==8:
+            e.Skip()
+            return
+        elif e.GetKeyCode() ==13 and txtctrl==self.txtdestino:
+            try:
+                distance_dic=gmaps.distance_matrix(origins=self.txtorigen.GetValue(), destinations=self.txtdestino.GetValue(), mode='driving')
+                distance=ceil(distance_dic['rows'][0]['elements'][0]['distance']['value']/1000)
+                self.txtkm.SetValue(str(distance))
+                e.Skip()
+                return
+            except:
+                print('Error: puede que no haya internet o hubo un problema calculando la distancia')
+                self.Destroy()
+        
+        else:
+            try:
+                last_letter=chr(e.GetKeyCode())
+                word=txtctrl.GetValue().lower()+last_letter.lower()
+                auto_place=gmaps.places_autocomplete(input_text=word, location=(6.247173, -75.567556) , radius=20000)
+                self.lista=[i['description'] for i in auto_place]
+                # self.lista=['Sabaneta, Antioquia, Colombia', 'Sabaneta, Sabaneta, Antioquia, Colombia', 'Sabaneta Park, Carrera 45, Sabaneta, Antioquia, Colombia', 'Sabaneta, Calle 48A, Medellin, Antioquia, Colombia', 'Sabana Alta, Calle 77 Sur, Sabaneta, Antioquia, Colombia']
+                txtctrl.AutoComplete(self.lista)       
+                e.Skip()
+            except:
+                print('Error: puede que no haya internet')
+                self.Destroy()
         
     def onCheck_si_peaje(self,event):
         if self.check_no_peaje.IsChecked():
@@ -1045,10 +1106,14 @@ class ww_nuevo_requerimiento12(wx.Frame):
     def validar_campos_vacios_numero(self, diccionario_campos_oblig):
         
         for campo in diccionario_campos_oblig:
-            if campo.GetValue().isnumeric() == False:
-                error_msgbox=wx.MessageDialog(None,'El campo: ' + diccionario_campos_oblig[campo] +' Solo debe contener caracteres numericos','ERROR',wx.ICON_ERROR)
-                error_msgbox.ShowModal()   
-                return False
+            try:
+                int(campo.GetValue())
+            except Exception as e:
+                print(e)
+                if campo.GetValue().isnumeric() == False:
+                    error_msgbox=wx.MessageDialog(None,'El campo: ' + diccionario_campos_oblig[campo] +' Solo debe contener caracteres numericos','ERROR',wx.ICON_ERROR)
+                    error_msgbox.ShowModal()   
+                    return False
         return True
     
     def validar_seleccion_combos(self,diccionario_campos_oblig):

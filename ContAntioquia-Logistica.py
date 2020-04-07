@@ -8,17 +8,18 @@ Created on Sat Feb  1 07:28:37 2020
 from datetime import datetime
 from copy import deepcopy
 from math import ceil
-import urllib3
+from email.message import EmailMessage
+from wx.lib.masked import NumCtrl
 
+import urllib3
 import wx
 import wx.adv
 import openpyxl
 import smtplib
-from email.message import EmailMessage
 import googlemaps
 
 
-gmaps = googlemaps.Client(key='AIzaSyBB-89AHoMap9i-5CGWjdLin2d30hPwVv4')
+gmaps = googlemaps.Client(key='AIz..KEYAPIGOOGLE..')
 
 
 col_requerimiento_auto=1
@@ -35,27 +36,26 @@ col_requieredescargue=11
 col_origen=12
 col_destino=13
 col_km=14
-col_precio=15
-col_recargotransporte=16
-col_precio_recargo=17
-col_nombreresponsable=18
-col_telefono_resp=19
-col_correo=20
-col_nombresiso=21
-col_telefono_siso=22
-col_debeinfo=23
-col_horasantes=24
-col_fechaentrega=25
-col_direccion=26
-col_referenciacont=27
-col_nombreconduc=28
-col_cedula=29
-col_telefonoconduc=30
-col_placa=31
-col_adiciones=32
-col_preguntahoras=33
-col_preguntadoc=34
-col_consecutivo_tipo_req=35
+col_recargotransporte=15
+col_precio_recargo=16
+col_nombreresponsable=17
+col_telefono_resp=18
+col_correo=19
+col_nombresiso=20
+col_telefono_siso=21
+col_debeinfo=22
+col_horasantes=23
+col_fechaentrega=24
+col_direccion=25
+col_referenciacont=26
+col_nombreconduc=27
+col_cedula=28
+col_telefonoconduc=29
+col_placa=30
+col_adiciones=31
+col_preguntahoras=32
+col_preguntadoc=33
+col_consecutivo_tipo_req=34
 
 
 principal_color=wx.Colour(51, 102, 51)
@@ -69,8 +69,11 @@ path_db=sheet_config.cell(row=2,column=2).value
 path_remision=sheet_config.cell(row=3,column=2).value
 path_remision_A=sheet_config.cell(row=4,column=2).value
 path_remision_B=sheet_config.cell(row=5,column=2).value
-path_mov_dev_consecutivos=sheet_config.cell(row=22,column=2).value
+path_remision_C=sheet_config.cell(row=27,column=2).value
+path_movto_consecutivos=sheet_config.cell(row=22,column=2).value
 path_vta_alq_mod_consecutivos=sheet_config.cell(row=23,column=2).value
+path_devol_consecutivos=sheet_config.cell(row=24,column=2).value
+
 
 ##################################################### VENTANA INICIAL #############################################################################################################################
 
@@ -434,7 +437,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.txtorigen=wx.TextCtrl(self.panel, style = wx.TE_PROCESS_ENTER)
         self.txtdestino=wx.TextCtrl(self.panel, style = wx.TE_PROCESS_ENTER)
         self.txtkm=wx.TextCtrl(self.panel)
-        self.txtprecio=wx.TextCtrl(self.panel)
+        self.txtprecio=NumCtrl(self.panel,groupDigits=True)
         self.txtnombreresponsable=wx.TextCtrl(self.panel)
         self.txttelefono_resp=wx.TextCtrl(self.panel)
         self.txtcorreo=wx.TextCtrl(self.panel)
@@ -466,7 +469,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.check_si_info.SetForegroundColour(principal_color)
         self.check_no_info.SetForegroundColour(principal_color)
         
-        self.check_no_peaje.SetValue(True)
+        
 
         btn_guardar = wx.Button(self.panel, id=wx.ID_OK, label="Guardar",size=(-1,-1))
         btn_salir = wx.Button(self.panel, id=wx.ID_ANY, label="Salir",size=(-1,-1))
@@ -592,12 +595,18 @@ class ww_nuevo_requerimiento12(wx.Frame):
                 self.Destroy()
         
     def onCheck_si_peaje(self,event):
+
+        self.precio_final(True)
         if self.check_no_peaje.IsChecked():
             self.check_no_peaje.SetValue(False)
             
+            
     def onCheck_no_peaje(self,event):
+        
+        self.precio_final(False)
         if self.check_si_peaje.IsChecked():
             self.check_si_peaje.SetValue(False)
+            
             
     def onCheck_si_info(self,event):
         self.txthorasantes.Show()
@@ -613,13 +622,15 @@ class ww_nuevo_requerimiento12(wx.Frame):
         if self.check_si_info.IsChecked():
             self.check_si_info.SetValue(False)
     
-    def precio_final(self,hist_req_sheet):
+    def precio_final(self, boolean):
         wb_listas=openpyxl.load_workbook(path_config)
         config_sheet=wb_listas['Config']
+        precio_km=config_sheet.cell(row=14, column=2).value
         km=float(self.txtkm.GetValue())
-        precio=int(self.txtprecio.GetValue())
         
-        if self.check_si_peaje.IsChecked():
+        print(boolean)
+    
+        if boolean==True:
             limites_inf=[config_sheet.cell(row=11,column=1).value,config_sheet.cell(row=12,column=1).value,
                          config_sheet.cell(row=13,column=1).value]
             
@@ -631,19 +642,19 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
             for i in range(len(factores)):
                 if limites_inf[i] < km and km <=limites_sup[i]:
-                    precio_con_recargo= precio*factores[i]
+                    precio_con_recargo= ceil(km*precio_km*factores[i])
                     break
             
             print(precio_con_recargo)
-            hist_req_sheet.cell(row=self.fila_vacia, column=col_precio_recargo).value=precio_con_recargo
+            self.txtprecio.SetValue(precio_con_recargo)
             
-        else:
+        elif boolean==False:
             
-            hist_req_sheet.cell(row=self.fila_vacia, column=col_precio_recargo).value=precio
-                    
+            precio_con_recargo= ceil(km*precio_km)
+            self.txtprecio.SetValue(precio_con_recargo)
 
-    def guardar_req(self,event):
         
+    def guardar_req(self,event):
         
         if self.check_si_info.IsChecked():
             diccionario_campos_oblig_texto={self.txtcotizacion:'Cotizacion N°', self.txtnombrecliente:'Nombre Cliente', self.txtorigen:'Origen', self.txtdestino:'Destino', self.txtnombreresponsable:'Nombre Responsable', self.txttelefono_resp:'Telefono Resposnable', self.txthorasantes:'N° Horas Antes'}
@@ -658,7 +669,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         wb_req=openpyxl.load_workbook(path_db)
         wb_listas=openpyxl.load_workbook(path_config)
-        
         
         hist_req_sheet=wb_req['Requerimientos']
         req2_sheet=wb_listas['Requerimientos-12']
@@ -737,7 +747,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
         hist_req_sheet.cell(row=self.fila_vacia, column=col_origen).value=origen
         hist_req_sheet.cell(row=self.fila_vacia, column=col_destino).value=destino
         hist_req_sheet.cell(row=self.fila_vacia, column=col_km).value=km
-        hist_req_sheet.cell(row=self.fila_vacia, column=col_precio).value=precio
+        hist_req_sheet.cell(row=self.fila_vacia, column=col_precio_recargo).value=precio
         hist_req_sheet.cell(row=self.fila_vacia, column=col_nombreresponsable).value=nombreresponsable
         hist_req_sheet.cell(row=self.fila_vacia, column=col_telefono_resp).value=telefono_resp
         hist_req_sheet.cell(row=self.fila_vacia, column=col_correo).value=correo
@@ -746,7 +756,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
         hist_req_sheet.cell(row=self.fila_vacia, column=col_debeinfo).value=debeinfo
         hist_req_sheet.cell(row=self.fila_vacia, column=col_horasantes).value=horasantes
         hist_req_sheet.cell(row=self.fila_vacia, column=col_recargotransporte).value=check_peaje
-        self.precio_final(hist_req_sheet)
+        
         siguiente_consec= self.leer_consecutivo_tipo_reg(tiporeq,hist_req_sheet)
         
         
@@ -768,8 +778,11 @@ class ww_nuevo_requerimiento12(wx.Frame):
             if tiporeq=='Venta' or tiporeq=='Alquiler' or tiporeq=='Modificacion':
                 with open(path_vta_alq_mod_consecutivos, 'a') as f:
                     f.write('\n'+str(siguiente_consec))
-            elif tiporeq=='Movimiento' or tiporeq=='Devolucion':
-                with open(path_mov_dev_consecutivos, 'a') as f:
+            elif tiporeq=='Movimiento':
+                with open(path_movto_consecutivos, 'a') as f:
+                    f.write('\n'+str(siguiente_consec))
+            elif tiporeq=='Devolucion':
+                with open(path_devol_consecutivos, 'a') as f:
                     f.write('\n'+str(siguiente_consec))
                     
             self.txtcotizacion.Value=''
@@ -935,12 +948,15 @@ class ww_nuevo_requerimiento12(wx.Frame):
         
         hist_req_sheet=wb_req['Requerimientos']
         req2_sheet=wb_listas['Requerimientos-12']
+        config_sheet=wb_listas['Config']
+        
         self.fila_vacia = 1
         
         while (hist_req_sheet.cell(row = self.fila_vacia, column = 1).value != None) :
           self.fila_vacia += 1
         
         for cell in hist_req_sheet['A']:
+            
                 if cell.value !=None:
                     self.lista_nro_req.append(cell.value)
         try:
@@ -1009,7 +1025,7 @@ class ww_nuevo_requerimiento12(wx.Frame):
         hist_req_sheet.cell(row=self.fila_vacia, column=col_origen).value=origen
         hist_req_sheet.cell(row=self.fila_vacia, column=col_destino).value=destino
         hist_req_sheet.cell(row=self.fila_vacia, column=col_km).value=km
-        hist_req_sheet.cell(row=self.fila_vacia, column=col_precio).value=precio
+        hist_req_sheet.cell(row=self.fila_vacia, column=col_precio_recargo).value=precio
         hist_req_sheet.cell(row=self.fila_vacia, column=col_nombreresponsable).value=nombreresponsable
         hist_req_sheet.cell(row=self.fila_vacia, column=col_telefono_resp).value=telefono_resp
         hist_req_sheet.cell(row=self.fila_vacia, column=col_correo).value=correo
@@ -1018,7 +1034,6 @@ class ww_nuevo_requerimiento12(wx.Frame):
         hist_req_sheet.cell(row=self.fila_vacia, column=col_debeinfo).value=debeinfo
         hist_req_sheet.cell(row=self.fila_vacia, column=col_horasantes).value=horasantes
         hist_req_sheet.cell(row=self.fila_vacia, column=col_recargotransporte).value=check_peaje
-        self.precio_final(hist_req_sheet)
         siguiente_consec= self.leer_consecutivo_tipo_reg(tiporeq,hist_req_sheet)
         
         self.combotipotransporte.Value=self.lista_tipo_transp[0]
@@ -1027,13 +1042,31 @@ class ww_nuevo_requerimiento12(wx.Frame):
         self.txtprecio.Value=''
         self.comborequieredescargue.Value=self.lista_tipo_transp[0]
         
+        
+        if tipotransporte=='Propio':
+            nombreconduc=config_sheet.cell(row=16,column=2).value
+            cedula=config_sheet.cell(row=17,column=2).value
+            telefonoconduc=config_sheet.cell(row=18,column=2).value
+            placa=config_sheet.cell(row=19,column=2).value
+            
+            hist_req_sheet.cell(row=self.fila_vacia, column=col_nombreconduc).value=nombreconduc
+            hist_req_sheet.cell(row=self.fila_vacia, column=col_cedula).value=cedula
+            hist_req_sheet.cell(row=self.fila_vacia, column=col_telefonoconduc).value=telefonoconduc
+            hist_req_sheet.cell(row=self.fila_vacia, column=col_placa).value=placa
+        
+        
+        
+        
         try:
             wb_req.save(path_db)
             if tiporeq=='Venta' or tiporeq=='Alquiler' or tiporeq=='Modificacion':
                 with open(path_vta_alq_mod_consecutivos, 'a') as f:
                     f.write('\n'+str(siguiente_consec))
-            elif tiporeq=='Movimiento' or tiporeq=='Devolucion':
-                with open(path_mov_dev_consecutivos, 'a') as f:
+            elif tiporeq=='Movimiento':
+                with open(path_movto_consecutivos, 'a') as f:
+                    f.write('\n'+str(siguiente_consec))
+            elif tiporeq=='Devolucion':
+                with open(path_devol_consecutivos, 'a') as f:
                     f.write('\n'+str(siguiente_consec))
                     
             self.lista_nro_req=[]
@@ -1085,16 +1118,23 @@ class ww_nuevo_requerimiento12(wx.Frame):
                 hist_req_sheet.cell(row=self.fila_vacia, column=col_consecutivo_tipo_req).value=siguiente_consec
                 return siguiente_consec
  
-        elif tiporeq=='Movimiento' or tiporeq=='Devolucion':
-             with open(path_mov_dev_consecutivos, 'r') as f:
+        elif tiporeq=='Movimiento':
+             with open(path_movto_consecutivos, 'r') as f:
                 lines=f.readlines()
                 last=int(lines[-1])
                 siguiente_consec=last+1
                 hist_req_sheet.cell(row=self.fila_vacia, column=col_consecutivo_tipo_req).value=siguiente_consec
                 return siguiente_consec
-       
+        
+        elif tiporeq=='Devolucion':
+            with open(path_devol_consecutivos, 'r') as f:
+                lines=f.readlines()
+                last=int(lines[-1])
+                siguiente_consec=last+1
+                hist_req_sheet.cell(row=self.fila_vacia, column=col_consecutivo_tipo_req).value=siguiente_consec
+                return siguiente_consec
             
-    
+
     def validar_campos_vacios_texto(self,diccionario_campos_oblig):
         for campo in diccionario_campos_oblig:
             if len(campo.GetValue().strip()) == 0:
@@ -1329,7 +1369,7 @@ class ww_logistica22(wx.Frame):
         self.txtorigen=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
         self.txtdestino=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
         self.txtkm=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtprecio=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
+        self.txtprecio=NumCtrl(self.panel,style=wx.TE_READONLY, groupDigits=True)
         self.txtrecargotransporte=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
         self.txtnombreresp=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
         self.txttelresp=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
@@ -1756,6 +1796,12 @@ class ww_logistica22(wx.Frame):
             checkbox2=[self.checkpreguntahoras_no,self.checkpreguntahoras_si]
             if self.validar_checkbox(checkbox2,'Documentacion Enviada Horas Antes?')==False:
                 return
+            
+        if (str(self.txtfechaentrega.GetValue())) == 'INVALID DateTime':
+            error_msgbox=wx.MessageDialog(None,'Seleccione una fecha de entrega ','ERROR',wx.ICON_ERROR)
+            error_msgbox.ShowModal()
+            return
+            
 
         fechaentrega=self.txtfechaentrega.GetValue()
         fechaentrega=datetime.strptime(fechaentrega.Format('%d/%m/%Y'),'%d/%m/%Y')
@@ -1976,8 +2022,11 @@ class ww_remision11(wx.Frame):
         if tipo=='Venta' or tipo=='Alquiler' or tipo=='Modificacion':
            new_path=path_remision_A + 'REMISION No ' + str_nro_req + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
   
-        elif tipo=='Movimiento' or tipo=='Devolucion':
+        elif tipo=='Movimiento':
             new_path=path_remision_B + 'REMISION No ' + str_nro_req + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
+        
+        elif tipo=='Devolucion':
+            new_path=path_remision_C + 'REMISION No ' + str_nro_req + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
         
         try:
             wb_remision.save(new_path)

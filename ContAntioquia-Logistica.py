@@ -19,7 +19,7 @@ import smtplib
 import googlemaps
 
 
-gmaps = googlemaps.Client(key='AIz..KEYAPIGOOGLE..')
+gmaps = googlemaps.Client(key='AI...KEY API GOOGLLE')
 
 
 col_requerimiento_auto=1
@@ -1360,25 +1360,25 @@ class ww_logistica22(wx.Frame):
         self.lblpreguntadoc=wx.StaticText(self.panel, label='Documentacion Completa?')
         self.lblnombrecliente=wx.StaticText(self.panel, label='Nombre Cliente')
 
-        self.txtcotizacion=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txttiporeq=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txttipotransp=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtcont=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txttipocont=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtdescargue=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtorigen=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtdestino=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtkm=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtprecio=NumCtrl(self.panel,style=wx.TE_READONLY, groupDigits=True)
-        self.txtrecargotransporte=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtnombreresp=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txttelresp=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtcorreoresp=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtnombresiso=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txttelesiso=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtdebeinfo=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txthorasantes=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
-        self.txtnombrecliente=wx.TextCtrl(self.panel,style=wx.TE_READONLY)
+        self.txtcotizacion=wx.TextCtrl(self.panel,) #style=wx.TE_READONLY
+        self.txttiporeq=wx.TextCtrl(self.panel)
+        self.txttipotransp=wx.TextCtrl(self.panel)
+        self.txtcont=wx.TextCtrl(self.panel)
+        self.txttipocont=wx.TextCtrl(self.panel)
+        self.txtdescargue=wx.TextCtrl(self.panel)
+        self.txtorigen=wx.TextCtrl(self.panel)
+        self.txtdestino=wx.TextCtrl(self.panel)
+        self.txtkm=wx.TextCtrl(self.panel)
+        self.txtprecio=NumCtrl(self.panel, groupDigits=True)
+        self.txtrecargotransporte=wx.TextCtrl(self.panel)
+        self.txtnombreresp=wx.TextCtrl(self.panel)
+        self.txttelresp=wx.TextCtrl(self.panel)
+        self.txtcorreoresp=wx.TextCtrl(self.panel)
+        self.txtnombresiso=wx.TextCtrl(self.panel)
+        self.txttelesiso=wx.TextCtrl(self.panel)
+        self.txtdebeinfo=wx.TextCtrl(self.panel)
+        self.txthorasantes=wx.TextCtrl(self.panel)
+        self.txtnombrecliente=wx.TextCtrl(self.panel)
 
         try:
             self.txtcotizacion.SetValue(self.lista_valores_fila[col_cotizacion-1])
@@ -1989,6 +1989,7 @@ class ww_remision11(wx.Frame):
         adiciones=rows[0][col_adiciones-1]
         nro_interno=rows[0][col_referenciacont-1]
         
+        
         sheet_remision['H11']=nro_req
         sheet_remision['H9']=consec_remision
         sheet_remision['AC9']=tipo
@@ -2020,13 +2021,13 @@ class ww_remision11(wx.Frame):
         sheet_remision.cell(row=9, column=11)._style=deepcopy(sheet_remision['B9']._style)
         
         if tipo=='Venta' or tipo=='Alquiler' or tipo=='Modificacion':
-           new_path=path_remision_A + 'REMISION No ' + str_nro_req + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
+           new_path=path_remision_A + 'REMISION No ' + consec_remision + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
   
         elif tipo=='Movimiento':
-            new_path=path_remision_B + 'REMISION No ' + str_nro_req + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
+            new_path=path_remision_B + 'REMISION No ' + consec_remision + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
         
         elif tipo=='Devolucion':
-            new_path=path_remision_C + 'REMISION No ' + str_nro_req + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
+            new_path=path_remision_C + 'REMISION No ' + consec_remision + '-' + str(fecha_remision) +' '+ cliente.upper() + ' .xlsx'
         
         try:
             wb_remision.save(new_path)
